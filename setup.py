@@ -26,8 +26,8 @@ setup(
     long_description_content_type="text/markdown",
     author='Rakpong Kittinaradorn',
     author_email='r.kittinaradorn@gmail.com',
-    url='https://github.com/jaidedai/easyocr',
-    download_url='https://github.com/jaidedai/easyocr.git',
+    url='https://github.com/codernik14/EasyOCR',
+    download_url='https://github.com/codernik14/EasyOCR.git',
     keywords=['ocr optical character recognition deep learning neural network'],
     classifiers=[
         'Development Status :: 5 - Production/Stable'

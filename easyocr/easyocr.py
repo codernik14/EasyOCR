@@ -17,6 +17,11 @@ from PIL import Image
 from logging import getLogger
 import yaml
 
+import multiprocessing
+import time
+
+
+
 if sys.version_info[0] == 2:
     from io import open
     from six.moves.urllib.request import urlretrieve
@@ -50,6 +55,7 @@ class Reader(object):
 
             download_enabled (bool): Enabled downloading of model data via HTTP (default).
         """
+        self.flag = 0
         self.download_enabled = download_enabled
 
         self.model_storage_directory = MODULE_PATH + '/model'
@@ -318,23 +324,42 @@ class Reader(object):
 
         # without gpu/parallelization, it is faster to process image one by one
         if ((batch_size == 1) or (self.device == 'cpu')) and not rotation_info:
-            result = []
-            for bbox in horizontal_list:
-                h_list = [bbox]
-                f_list = []
-                image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
-                result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
-                              ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
-                              workers, self.device)
-                result += result0
-            for bbox in free_list:
-                h_list = []
-                f_list = [bbox]
-                image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
-                result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
-                              ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
-                              workers, self.device)
-                result += result0
+            if self.flag:
+                result = []
+                for bbox in horizontal_list:
+                    h_list = [bbox]
+                    f_list = []
+                    image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
+                    result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                                ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                                workers, self.device)
+                    result += result0
+                for bbox in free_list:
+                    h_list = []
+                    f_list = [bbox]
+                    image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
+                    result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                                ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                                workers, self.device)
+                    result += result0
+            else :
+                result = []
+                for bbox in horizontal_list:
+                    h_list = [bbox]
+                    f_list = []
+                    image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
+                    result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                                ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                                workers, self.device)
+                    result += result0
+                for bbox in free_list:
+                    h_list = []
+                    f_list = [bbox]
+                    image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
+                    result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                                ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                                workers, self.device)
+                    result += result0
         # default mode will try to process multiple boxes at the same time
         else:
             image_list, max_width = get_image_list(horizontal_list, free_list, img_cv_grey, model_height = imgH)
@@ -485,11 +510,26 @@ class Reader(object):
         result_agg = []
         # put img_cv_grey in a list if its a single img
         img_cv_grey = [img_cv_grey] if len(img_cv_grey.shape) == 2 else img_cv_grey
-        for grey_img, horizontal_list, free_list in zip(img_cv_grey, horizontal_list_agg, free_list_agg):
-            result_agg.append(self.recognize(grey_img, horizontal_list, free_list,\
-                                            decoder, beamWidth, batch_size,\
-                                            workers, allowlist, blocklist, detail, rotation_info,\
-                                            paragraph, contrast_ths, adjust_contrast,\
-                                            filter_ths, y_ths, x_ths, False, output_format))
-
+        if self.flag :
+            print(time.time())
+            curr = time.time()
+            for grey_img, horizontal_list, free_list in zip(img_cv_grey, horizontal_list_agg, free_list_agg):
+                result_agg.append(self.recognize(grey_img, horizontal_list, free_list,\
+                                                decoder, beamWidth, batch_size,\
+                                                workers, allowlist, blocklist, detail, rotation_info,\
+                                                paragraph, contrast_ths, adjust_contrast,\
+                                                filter_ths, y_ths, x_ths, False, output_format))
+            print(time.time() - curr)
+        else:
+            print(time.time())
+            curr = time.time()
+            pool = multiprocessing.Pool(mp.cpu_count())
+            for grey_img, horizontal_list, free_list in zip(img_cv_grey, horizontal_list_agg, free_list_agg):
+                result_agg.append(self.recognize(grey_img, horizontal_list, free_list,\
+                                                decoder, beamWidth, batch_size,\
+                                                workers, allowlist, blocklist, detail, rotation_info,\
+                                                paragraph, contrast_ths, adjust_contrast,\
+                                                filter_ths, y_ths, x_ths, False, output_format))
+            print(time.time() - curr)
+            
         return result_agg
