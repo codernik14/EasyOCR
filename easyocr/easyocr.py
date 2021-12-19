@@ -340,7 +340,7 @@ class Reader(object):
                     image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
                     pool.apply_async(get_text, args=(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
                                 ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
-                                workers, self.device), callback=self.get_result_recog)
+                                workers, self.device), callback=get_result_recog)
                     # result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
                     #             ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
                     #             workers, self.device)
@@ -351,11 +351,13 @@ class Reader(object):
                     image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
                     pool.apply_async(get_text, args=(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
                                 ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
-                                workers, self.device), callback=self.get_result_recog)
+                                workers, self.device), callback=get_result_recog)
                     # result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
                     #             ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
                     #             workers, self.device)
                     # result += result0
+                pool.close()
+                pool.join() 
                 result = result_recog
                 print("Single image with mp : ", time.time() - curr)
             else :
