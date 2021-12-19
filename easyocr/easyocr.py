@@ -513,6 +513,7 @@ class Reader(object):
         if self.flag :
             print(time.time())
             curr = time.time()
+            pool = multiprocessing.Pool(multiprocessing.cpu_count())
             for grey_img, horizontal_list, free_list in zip(img_cv_grey, horizontal_list_agg, free_list_agg):
                 result_agg.append(self.recognize(grey_img, horizontal_list, free_list,\
                                                 decoder, beamWidth, batch_size,\
@@ -523,7 +524,6 @@ class Reader(object):
         else:
             print(time.time())
             curr = time.time()
-            pool = multiprocessing.Pool(mp.cpu_count())
             for grey_img, horizontal_list, free_list in zip(img_cv_grey, horizontal_list_agg, free_list_agg):
                 result_agg.append(self.recognize(grey_img, horizontal_list, free_list,\
                                                 decoder, beamWidth, batch_size,\
