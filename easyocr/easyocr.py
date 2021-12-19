@@ -331,35 +331,56 @@ class Reader(object):
         # without gpu/parallelization, it is faster to process image one by one
         if ((batch_size == 1) or (self.device == 'cpu')) and not rotation_info:
             if self.flag:
-                result = []
-                curr = time.time()
-                pool = multiprocessing.Pool(multiprocessing.cpu_count())
-                for bbox in horizontal_list:
-                    h_list = [bbox]
-                    f_list = []
-                    image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
-                    pool.apply_async(get_text, args=(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
-                                ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
-                                workers, self.device), callback=get_result_recog)
-                    # result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
-                    #             ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
-                    #             workers, self.device)
-                    # result += result0
-                for bbox in free_list:
-                    h_list = []
-                    f_list = [bbox]
-                    image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
-                    pool.apply_async(get_text, args=(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
-                                ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
-                                workers, self.device), callback=get_result_recog)
-                    # result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
-                    #             ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
-                    #             workers, self.device)
-                    # result += result0
-                pool.close()
-                pool.join() 
-                result = result_recog
-                print("Single image with mp : ", time.time() - curr)
+                try:
+                    result = []
+                    curr = time.time()
+                    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+                    for bbox in horizontal_list:
+                        h_list = [bbox]
+                        f_list = []
+                        image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
+                        pool.apply_async(get_text, args=(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                                    ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                                    workers, self.device), callback=get_result_recog)
+                        # result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                        #             ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                        #             workers, self.device)
+                        # result += result0
+                    for bbox in free_list:
+                        h_list = []
+                        f_list = [bbox]
+                        image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
+                        pool.apply_async(get_text, args=(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                                    ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                                    workers, self.device), callback=get_result_recog)
+                        # result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                        #             ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                        #             workers, self.device)
+                        # result += result0
+                    pool.close()
+                    pool.join() 
+                    result = result_recog
+                    print("Single image with mp : ", time.time() - curr)
+                except exception as e:
+                    result = []
+                    curr = time.time()
+                    for bbox in horizontal_list:
+                        h_list = [bbox]
+                        f_list = []
+                        image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
+                        result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                                    ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                                    workers, self.device)
+                        result += result0
+                    for bbox in free_list:
+                        h_list = []
+                        f_list = [bbox]
+                        image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
+                        result0 = get_text(self.character, imgH, int(max_width), self.recognizer, self.converter, image_list,\
+                                    ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
+                                    workers, self.device)
+                        result += result0
+                    print("Single image without mp : ", time.time() - curr)
             else :
                 result = []
                 curr = time.time()
