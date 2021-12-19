@@ -481,7 +481,9 @@ class Reader(object):
                         if res != -1:
                             if filename[0:2]=="en" or filename[0:2]=="ch":
                                 print(tupleadd(i))
-
+    def get_result(self,result):
+        global result_agg
+        result_agg.append(result)
     def readtext_batched(self, image, n_width=None, n_height=None,\
                          decoder = 'greedy', beamWidth= 5, batch_size = 1,\
                          workers = 0, allowlist = None, blocklist = None, detail = 1,\
@@ -511,18 +513,25 @@ class Reader(object):
         # put img_cv_grey in a list if its a single img
         img_cv_grey = [img_cv_grey] if len(img_cv_grey.shape) == 2 else img_cv_grey
         if self.flag :
-            print(time.time())
+            # print(time.time())
             curr = time.time()
             pool = multiprocessing.Pool(multiprocessing.cpu_count())
             for grey_img, horizontal_list, free_list in zip(img_cv_grey, horizontal_list_agg, free_list_agg):
-                result_agg.append(self.recognize(grey_img, horizontal_list, free_list,\
+                pool.apply_async(self.recognize, args=(grey_img, horizontal_list, free_list,\
                                                 decoder, beamWidth, batch_size,\
                                                 workers, allowlist, blocklist, detail, rotation_info,\
                                                 paragraph, contrast_ths, adjust_contrast,\
-                                                filter_ths, y_ths, x_ths, False, output_format))
-            print(time.time() - curr)
+                                                filter_ths, y_ths, x_ths, False, output_format), callback=self.get_result)
+                # result_agg.append(self.recognize(grey_img, horizontal_list, free_list,\
+                #                                 decoder, beamWidth, batch_size,\
+                #                                 workers, allowlist, blocklist, detail, rotation_info,\
+                #                                 paragraph, contrast_ths, adjust_contrast,\
+                #                                 filter_ths, y_ths, x_ths, False, output_format))
+            pool.close()
+            pool.join() 
+            print("Time taken multiprocessing = " ,time.time() - curr)
         else:
-            print(time.time())
+            # print(time.time())
             curr = time.time()
             for grey_img, horizontal_list, free_list in zip(img_cv_grey, horizontal_list_agg, free_list_agg):
                 result_agg.append(self.recognize(grey_img, horizontal_list, free_list,\
@@ -530,6 +539,7 @@ class Reader(object):
                                                 workers, allowlist, blocklist, detail, rotation_info,\
                                                 paragraph, contrast_ths, adjust_contrast,\
                                                 filter_ths, y_ths, x_ths, False, output_format))
-            print(time.time() - curr)
+            # print(time.time() - curr)
+            print("Time taken normal = " ,time.time() - curr)
             
         return result_agg
