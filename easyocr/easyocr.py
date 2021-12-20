@@ -361,7 +361,7 @@ class Reader(object):
                     pool.join() 
                     result = result_recog
                     print("Single image with mp : ", time.time() - curr)
-                except exception as e:
+                except Exception as e:
                     result = []
                     curr = time.time()
                     for bbox in horizontal_list:
