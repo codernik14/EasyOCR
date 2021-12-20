@@ -348,7 +348,10 @@ class Reader(object):
                         #             ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
                         #             workers, self.device)
                         # result += result0
-                    print("Starting mp for loop 2")
+                    pool.close()
+                    pool.join() 
+                    pool = multiprocessing.Pool(3)
+                    print("Starting mp for loop 2", len(free_list))
                     for bbox in free_list:
                         print("Processing 2")
                         h_list = []
