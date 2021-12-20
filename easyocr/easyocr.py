@@ -334,8 +334,10 @@ class Reader(object):
                 try:
                     result = []
                     curr = time.time()
-                    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+                    pool = multiprocessing.Pool(3)
+                    print("Starting mp for loop")
                     for bbox in horizontal_list:
+                        print("Processing ")
                         h_list = [bbox]
                         f_list = []
                         image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
@@ -346,7 +348,9 @@ class Reader(object):
                         #             ignore_char, decoder, beamWidth, batch_size, contrast_ths, adjust_contrast, filter_ths,\
                         #             workers, self.device)
                         # result += result0
+                    print("Starting mp for loop 2")
                     for bbox in free_list:
+                        print("Processing 2")
                         h_list = []
                         f_list = [bbox]
                         image_list, max_width = get_image_list(h_list, f_list, img_cv_grey, model_height = imgH)
@@ -557,8 +561,10 @@ class Reader(object):
         if self.flag :
             # print(time.time())
             curr = time.time()
-            pool = multiprocessing.Pool(multiprocessing.cpu_count())
+            pool = multiprocessing.Pool(3)
+            print("Starting execution")
             for grey_img, horizontal_list, free_list in zip(img_cv_grey, horizontal_list_agg, free_list_agg):
+                print("batched processing ")
                 pool.apply_async(self.recognize, args=(grey_img, horizontal_list, free_list,\
                                                 decoder, beamWidth, batch_size,\
                                                 workers, allowlist, blocklist, detail, rotation_info,\
